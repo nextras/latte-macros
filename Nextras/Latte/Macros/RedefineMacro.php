@@ -10,12 +10,21 @@
 
 namespace Nextras\Latte\Macros;
 
-use Nette\Latte\CompileException;
-use Nette\Latte\Compiler;
-use Nette\Latte\MacroNode;
-use Nette\Latte\Macros\MacroSet;
-use Nette\Latte\PhpWriter;
+use Latte\CompileException;
+use Latte\Compiler;
+use Latte\MacroNode;
+use Latte\Macros\MacroSet;
+use Latte\PhpWriter;
 use Nette\Utils\Strings;
+
+
+if (!class_exists('Latte\CompileException')) {
+	class_alias('Nette\Latte\CompileException', 'Latte\CompileException');
+	class_alias('Nette\Latte\Compiler', 'Latte\Compiler');
+	class_alias('Nette\Latte\MacroNode', 'Latte\MacroNode');
+	class_alias('Nette\Latte\Macros\MacroSet', 'Latte\Macros\MacroSet');
+	class_alias('Nette\Latte\PhpWriter', 'Latte\PhpWriter');
+}
 
 
 class RedefineMacro extends MacroSet
