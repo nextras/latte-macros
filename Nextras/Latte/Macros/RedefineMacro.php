@@ -93,6 +93,7 @@ class RedefineMacro extends MacroSet
 			}
 			$prolog[] = "//\n// end of blocks\n//";
 		}
+		$this->namedBlocks = array();
 
 		return array(implode("\n\n", $prolog), "");
 	}
