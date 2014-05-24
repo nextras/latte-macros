@@ -21,6 +21,6 @@
 		}
 	},
 	"autoload": {
-		"psr-0": { "Nextras\\Latte\\Macros": "" }
+		"psr-4": { "Nextras\\Latte\\Macros\\": "src/" }
 	}
 }
