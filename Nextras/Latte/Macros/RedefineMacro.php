@@ -15,16 +15,6 @@ use Latte\Compiler;
 use Latte\MacroNode;
 use Latte\Macros\MacroSet;
 use Latte\PhpWriter;
-use Nette\Utils\Strings;
-
-
-if (!class_exists('Latte\CompileException')) {
-	class_alias('Nette\Latte\CompileException', 'Latte\CompileException');
-	class_alias('Nette\Latte\Compiler', 'Latte\Compiler');
-	class_alias('Nette\Latte\MacroNode', 'Latte\MacroNode');
-	class_alias('Nette\Latte\Macros\MacroSet', 'Latte\Macros\MacroSet');
-	class_alias('Nette\Latte\PhpWriter', 'Latte\PhpWriter');
-}
 
 
 class RedefineMacro extends MacroSet
@@ -55,7 +45,7 @@ class RedefineMacro extends MacroSet
 
 		$this->namedBlocks[$name] = TRUE;
 
-		$prolog = $this->namedBlocks ? '' : "if (\$_l->extends) { ob_end_clean(); return Nette\\Latte\\Macros\\CoreMacros::includeTemplate(\$_l->extends, get_defined_vars(), \$template)->render(); }\n";
+		$prolog = $this->namedBlocks ? '' : "if (\$_l->extends) { ob_end_clean(); return Latte\\Macros\\CoreMacros::includeTemplate(\$_l->extends, get_defined_vars(), \$template)->render(); }\n";
 		return $prolog;
 	}
 
