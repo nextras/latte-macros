@@ -13,7 +13,7 @@
 	],
 	"require": {
 		"php": "~5.3",
-		"latte/latte": ">=2.2.0, <=2.2.1"
+		"latte/latte": "~2.2, >=2.2.2"
 	},
 	"extra": {
 		"branch-alias": {
