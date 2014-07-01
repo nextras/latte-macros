@@ -75,10 +75,11 @@ class RedefineMacro extends MacroSet
 			foreach ($this->namedBlocks as $name => $code) {
 				$func = '_lb' . substr(md5($this->getCompiler()->getTemplateId() . $name), 0, 10) . '_' . preg_replace('#[^a-z0-9_]#i', '_', $name);
 				$prolog[] = "//\n// block $name\n//\n"
-					. "\$_block = &\$_l->blocks[" . var_export($name, TRUE) . "];"
+					. "\$_internal = isset(\$_b) ? \$_b : \$_l;"
+					. "\$_block = &\$_internal->blocks[" . var_export($name, TRUE) . "];"
 					. "\$_block = \$_block === NULL ? array() : \$_block;array_unshift(\$_block, '$func');"
 					. "if (!function_exists('$func')) { "
-					. "function $func(\$_l, \$_args) { extract(\$_args)"
+					. "function $func(\$_b, \$_args) { \$_l = \$_b; extract(\$_args)"
 					. "\n?>$code<?php\n}}";
 			}
 			$prolog[] = "//\n// end of blocks\n//";
