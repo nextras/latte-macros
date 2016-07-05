@@ -5,88 +5,91 @@
  *
  * @license    MIT
  * @link       https://github.com/nextras/latte-macros
- * @author     Jan Skrasek
  */
 
 namespace Nextras\Latte\Macros;
 
-use Latte\CompileException;
 use Latte\Compiler;
 use Latte\MacroNode;
-use Latte\Macros\MacroSet;
+use Latte\Macros\BlockMacros;
 use Latte\PhpWriter;
 
 
-class RedefineMacro extends MacroSet
+class RedefineMacro extends BlockMacros
 {
 	/** @var array */
-	private $namedBlocks = array();
+	private $redefinedBlocks = [];
 
 
 	public static function install(Compiler $compiler)
 	{
 		$me = new static($compiler);
-		$me->addMacro('redefine', array($me, 'macroRedefine'), array($me, 'macroRedefineEnd'));
-		return $me;
+		$me->addMacro('redefine', [$me, 'macroRedefine'], [$me, 'macroRedefineEnd']);
 	}
 
 
-	/**
-	 * {redefine [#]name}
-	 */
-	public function macroRedefine(MacroNode $node, PhpWriter $writer)
+	public function initialize()
 	{
-		$name = $node->tokenizer->fetchWord();
-		$node->data->name = $name = ltrim($name, '#');
-
-		if (isset($this->namedBlocks[$name])) {
-			throw new CompileException("Cannot redeclare static block '$name'");
-		}
-
-		$this->namedBlocks[$name] = TRUE;
-
-		$prolog = $this->namedBlocks ? '' : "if (\$_l->extends) { ob_end_clean(); return Latte\\Macros\\CoreMacros::includeTemplate(\$_l->extends, get_defined_vars(), \$template)->render(); }\n";
-		return $prolog;
+		parent::initialize();
+		$this->redefinedBlocks = [];
 	}
 
 
-	/**
-	 * {/redefine}
-	 */
-	public function macroRedefineEnd(MacroNode $node, PhpWriter $writer)
-	{
-		if (empty($node->data->leave)) {
-			$this->namedBlocks[$node->data->name] = $tmp = rtrim(ltrim($node->content, "\n"), " \t");
-			$node->content = substr_replace($node->content, $node->openingCode . "\n", strspn($node->content, "\n"), strlen($tmp));
-			$node->openingCode = "<?php ?>";
-		}
-	}
-
-
-	/**
-	 * Finishes template parsing.
-	 * @return array(prolog, epilog)
-	 */
 	public function finalize()
 	{
-		$prolog = array();
+		$compiler = $this->getCompiler();
+		$properties = $compiler->getProperties();
+		$blocks = isset($properties['blocks']) ? $properties['blocks'] : [];
+		$blockTypes = isset($properties['blockTypes']) ? $properties['blockTypes'] : [];
 
-		if ($this->namedBlocks) {
-			foreach ($this->namedBlocks as $name => $code) {
-				$func = '_lb' . substr(md5($this->getCompiler()->getTemplateId() . $name), 0, 10) . '_' . preg_replace('#[^a-z0-9_]#i', '_', $name);
-				$prolog[] = "//\n// block $name\n//\n"
-					. "\$_internal = isset(\$_b) ? \$_b : \$_l;"
-					. "\$_block = &\$_internal->blocks[" . var_export($name, TRUE) . "];"
-					. "\$_block = \$_block === NULL ? array() : \$_block;array_unshift(\$_block, '$func');"
-					. "if (!function_exists('$func')) { "
-					. "function $func(\$_b, \$_args) { \$_l = \$_b; extract(\$_args)"
-					. "\n?>$code<?php\n}}";
-			}
-			$prolog[] = "//\n// end of blocks\n//";
+		list($prolog) = parent::finalize();
+
+		foreach ($compiler->getProperties()['blocks'] as $key => $val) { $blocks[$key] = $val; }
+		foreach ($compiler->getProperties()['blockTypes'] as $key => $val) { $blockTypes[$key] = $val; }
+		$compiler->addProperty('blocks', $blocks);
+		$compiler->addProperty('blockTypes', $blockTypes);
+
+		if (!$this->redefinedBlocks) {
+			return [$prolog];
 		}
-		$this->namedBlocks = array();
 
-		return array(implode("\n\n", $prolog), "");
+		$compiler = $this->getCompiler();
+		$compiler->addProperty('redefinedBlocks', $this->redefinedBlocks);
+		return [
+			$prolog . '
+			$blocksToPrepend = [];
+			foreach ($this->redefinedBlocks as $redefinedBlock) {
+				foreach ($this->blockQueue[$redefinedBlock] as $i => $callback) {
+					if ($callback[0] === $this) {
+						$blocksToPrepend[] = [$redefinedBlock, $i];
+					}
+				}
+			}
+			foreach ($blocksToPrepend as $blockToPrepend) {
+				$cb = $this->blockQueue[$blockToPrepend[0]][$blockToPrepend[1]];
+				unset($this->blockQueue[$blockToPrepend[0]][$blockToPrepend[1]]);
+				array_unshift($this->blockQueue[$blockToPrepend[0]], $cb);
+			}
+			'
+		];
 	}
 
+
+	public function macroRedefine(MacroNode $node, PhpWriter $writer)
+	{
+		$node->name = 'define';
+		$result = parent::macroBlock($node, $writer);
+		$node->name = 'redefine';
+		$this->redefinedBlocks[] = $node->data->name;
+		return $result;
+	}
+
+
+	public function macroRedefineEnd(MacroNode $node, PhpWriter $writer)
+	{
+		$node->name = 'define';
+		$result = parent::macroBlockEnd($node, $writer);
+		$node->name = 'redefine';
+		return $result;
+	}
 }
