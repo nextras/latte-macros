@@ -44,8 +44,16 @@ class RedefineMacro extends BlockMacros
 
 		list($prolog) = parent::finalize();
 
-		foreach ($compiler->getProperties()['blocks'] as $key => $val) { $blocks[$key] = $val; }
-		foreach ($compiler->getProperties()['blockTypes'] as $key => $val) { $blockTypes[$key] = $val; }
+		if (isset($compiler->getProperties()['blocks'])) {
+			foreach ($compiler->getProperties()['blocks'] as $key => $val) {
+				$blocks[$key] = $val;
+			}
+		}
+		if (isset($compiler->getProperties()['blockTypes'])) {
+			foreach ($compiler->getProperties()['blockTypes'] as $key => $val) {
+				$blockTypes[$key] = $val;
+			}
+		}
 		$compiler->addProperty('blocks', $blocks);
 		$compiler->addProperty('blockTypes', $blockTypes);
 

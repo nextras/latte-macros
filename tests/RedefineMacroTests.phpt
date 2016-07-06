@@ -27,3 +27,4 @@ Assert::same('import.latte', render('case1/main.latte'));
 Assert::same('main.latte', render('case2/main.latte'));
 Assert::same('import.latte', render('case3/main.latte'));
 Assert::same('import.latte', render('case4/main.latte'));
+Assert::same('No blocks', render('case5/main.latte'));
