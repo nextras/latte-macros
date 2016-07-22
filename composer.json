@@ -1,26 +1,27 @@
 {
 	"name": "nextras/latte-macros",
 	"type": "library",
-	"description": "Latte macros for Nette Framework.",
-	"keywords": ["nextras", "nette", "latte", "macros", "block-macros"],
-	"license": ["MIT"],
+	"description": "Macros for Latte from Nette Framework.",
+	"keywords": ["nextras", "nette", "latte", "macros", "redefine"],
+	"homepage": "https://github.com/nextras/latte-macros",
+	"license": "MIT",
 	"authors": [
-		{
-			"name": "Jan Skrasek",
-			"email": "hrach.cz@gmail.com",
-			"homepage": "http://jan.skrasek.com"
-		}
+		{ "name": "Nextras Project", "homepage": "https://github.com/nextras/orm/graphs/contributors" }
 	],
 	"require": {
-		"php": ">=5.3",
-		"latte/latte": "~2.2"
+		"php": ">=5.6",
+		"latte/latte": "~2.4"
 	},
-	"extra": {
-		"branch-alias": {
-			"dev-master": "1.1-dev"
-		}
+	"require-dev": {
+		"tracy/tracy": "~2.4",
+		"nette/tester": "~1.7"
 	},
 	"autoload": {
 		"psr-4": { "Nextras\\Latte\\Macros\\": "src/" }
+	},
+	"extra": {
+		"branch-alias": {
+			"dev-master": "2.0-dev"
+		}
 	}
 }
